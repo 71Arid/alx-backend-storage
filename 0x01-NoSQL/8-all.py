@@ -8,6 +8,6 @@ import pymongo
 
 
 def list_all(mongo_collection):
-    if mongo_collection is not None:
+    if mongo_collection is None:
         return list()
-    return list(mongo_collection)
+    return [doc for doc in mongo_collection.find()]
