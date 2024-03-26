@@ -8,6 +8,10 @@ import pymongo
 
 
 def list_all(mongo_collection):
+    """
+    turn the colloection into a
+    list using list comprehensions
+    """
     if mongo_collection is None:
         return list()
     return [doc for doc in mongo_collection.find()]
