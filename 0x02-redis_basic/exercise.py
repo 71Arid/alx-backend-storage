@@ -5,9 +5,29 @@ client as a private variable named _redis (using redis.Redis())
 and flushthe instance using flushdb.
 """
 import redis
-from typing import Union, Callable, Optional
+from typing import Union, Callable
 import uuid
+from functools import wraps
 
+
+def count_calls(method: Callable) -> Callable:
+        """
+        count_calls decorator that takes a single method
+        Callable argument and returns a Callable
+        use the qualified name of method using the __qualname__
+        dunder method.
+        """
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            """
+            use the qualified name of method using the __qualname__
+            dunder method.
+            Increments key value by 1 on each function call
+            """
+            key = method.__qualname__
+            self._redis.incr(key, amount=1)
+            return method(self, *args, **kwargs)
+        return wrapper
 
 class Cache:
     """
@@ -23,6 +43,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[int, float, bytes, str]) -> str:
         """
         stores data into redis with a key that
@@ -33,7 +54,7 @@ class Cache:
         self._redis.set(str(rnd_key), data)
         return str(rnd_key)
 
-    def get(self, key: str, fn: Optional[Callable]) ->\
+    def get(self, key: str, fn: Callable=None) ->\
             Union[str, bytes, int, None]:
         """
         This callable will be used to convert the data
@@ -61,16 +82,3 @@ class Cache:
         coversion function for int type
         """
         return self.get(key, fn=int)
-
-
-if __name__ == "__main__":
-    cache = Cache()
-    TEST_CASES = {
-        b"foo": None,
-        123: int,
-        "bar": lambda d: d.decode("utf-8")
-    }
-
-    for value, fn in TEST_CASES.items():
-        key = cache.store(value)
-        assert cache.get(key, fn=fn) == value
