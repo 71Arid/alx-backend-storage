@@ -1,0 +1,12 @@
+use db_test_5
+db.school.deleteMany({})
+db.school.insert({ name: "HBTN 1" })
+db.school.insert({ name: "HBTN 2" })
+db.school.insert({ name: "HBTN 3" })
+db.school.insert({ name: "Holberton school" })
+db.school.insert({ name: "Holberton school" })
+db.school.insert({ name: "HBTN 6" })
+db.school.insert({ name: "HBTN 7" })
+db.school.insert({ name: "Holberton school", address: "Battery street" })
+db.school.insert({ name: "HBTN 9" })
+db.school.insert({ name: "HBTN 10" })
