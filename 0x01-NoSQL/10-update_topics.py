@@ -11,4 +11,4 @@ def update_topics(mongo_collection, name, topics):
     uses update_one to update the parameter
     "dict parameter"
     """
-    mongo_collection.update_one({"name": name}, {"$set": {"topics": topics}})
+    mongo_collection.update_many({"name": name}, {"$set": {"topics": topics}})
