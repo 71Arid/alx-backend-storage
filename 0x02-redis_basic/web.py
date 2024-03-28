@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 In this tasks, we will implement a get_page function
 (prototype: def get_page(url: str) -> str:). The core of the
