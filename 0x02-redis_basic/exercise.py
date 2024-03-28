@@ -109,6 +109,7 @@ class Cache:
         """
         return self.get(key, fn=int)
 
+
 def replay(method: Callable) -> None:
     """
     gets the the count and the inputs and outputs for each
@@ -128,9 +129,3 @@ def replay(method: Callable) -> None:
         i = inp.decode('utf-8')
         o = out.decode('utf-8')
         print("{}(*{}) -> {}".format(key, i, o))
-
-cache = Cache()
-cache.store("foo")
-cache.store("bar")
-cache.store(42)
-replay(cache.store)
