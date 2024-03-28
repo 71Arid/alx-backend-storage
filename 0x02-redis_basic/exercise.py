@@ -11,23 +11,48 @@ from functools import wraps
 
 
 def count_calls(method: Callable) -> Callable:
+    """
+    count_calls decorator that takes a single method
+    Callable argument and returns a Callable
+    use the qualified name of method using the __qualname__
+    dunder method.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
         """
-        count_calls decorator that takes a single method
-        Callable argument and returns a Callable
         use the qualified name of method using the __qualname__
         dunder method.
+        Increments key value by 1 on each function call
         """
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            """
-            use the qualified name of method using the __qualname__
-            dunder method.
-            Increments key value by 1 on each function call
-            """
-            key = method.__qualname__
-            self._redis.incr(key, amount=1)
-            return method(self, *args, **kwargs)
-        return wrapper
+        key = method.__qualname__
+        self._redis.incr(key, amount=1)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    call_history is a decorator that takes in a
+    single argument and returns a Callable
+    store the history of inputs and outputs
+    for a particular function.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        wrapper takes in the exact parameter as method
+        and records the in puts in a redis list
+        It then calls the original function and
+        records its outputs in another redis list
+        """
+        key_in = method.__qualname__+":inputs"
+        key_out = method.__qualname__+":outputs"
+        self._redis.rpush(key_in, str(args))
+        res = method(self, *args, **kwargs)
+        self._redis.rpush(key_out, res)
+        return res
+    return wrapper
+
 
 class Cache:
     """
@@ -43,6 +68,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
@@ -54,7 +80,7 @@ class Cache:
         self._redis.set(str(rnd_key), data)
         return str(rnd_key)
 
-    def get(self, key: str, fn: Callable=None) ->\
+    def get(self, key: str, fn: Callable = None) ->\
             Union[str, bytes, int, None]:
         """
         This callable will be used to convert the data
