@@ -108,3 +108,22 @@ class Cache:
         coversion function for int type
         """
         return self.get(key, fn=int)
+
+    def replay(self, method: Callable) -> None:
+        """
+        gets the the count and the inputs and outputs for each
+        method call that is passed into it
+        """
+        key = method.__qualname__
+        count = self._redis.get(key)
+        print("{} was called {} times".format(key, int(count)))
+
+        key_in = key+":inputs"
+        key_out = key+":outputs"
+        inputs = self._redis.lrange(key_in, 0, -1)
+        outputs = self._redis.lrange(key_out, 0, -1)
+
+        for inp, out in zip(inputs, outputs):
+            i = inp.decode('utf-8')
+            o = out.decode('utf-8')
+            print("{}(*{}) -> {}".format(key, i, o))
