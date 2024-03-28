@@ -109,21 +109,28 @@ class Cache:
         """
         return self.get(key, fn=int)
 
-    def replay(self, method: Callable) -> None:
-        """
-        gets the the count and the inputs and outputs for each
-        method call that is passed into it
-        """
-        key = method.__qualname__
-        count = self._redis.get(key)
-        print("{} was called {} times".format(key, int(count)))
+def replay(method: Callable) -> None:
+    """
+    gets the the count and the inputs and outputs for each
+    method call that is passed into it
+    """
+    redis_inst = redis.Redis()
+    key = method.__qualname__
+    count = redis_inst.get(key)
+    print("{} was called {} times".format(key, int(count)))
 
-        key_in = key+":inputs"
-        key_out = key+":outputs"
-        inputs = self._redis.lrange(key_in, 0, -1)
-        outputs = self._redis.lrange(key_out, 0, -1)
+    key_in = key+":inputs"
+    key_out = key+":outputs"
+    inputs = redis_inst.lrange(key_in, 0, -1)
+    outputs = redis_inst.lrange(key_out, 0, -1)
 
-        for inp, out in zip(inputs, outputs):
-            i = inp.decode('utf-8')
-            o = out.decode('utf-8')
-            print("{}(*{}) -> {}".format(key, i, o))
+    for inp, out in zip(inputs, outputs):
+        i = inp.decode('utf-8')
+        o = out.decode('utf-8')
+        print("{}(*{}) -> {}".format(key, i, o))
+
+cache = Cache()
+cache.store("foo")
+cache.store("bar")
+cache.store(42)
+replay(cache.store)
