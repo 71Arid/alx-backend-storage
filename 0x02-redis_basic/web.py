@@ -35,7 +35,7 @@ def get_page(url: str) -> str:
     redis_inst = redis.Redis()
     key = "result:{}".format(url)
     cached_res = redis_inst.get(key)
-    if cached_res in not None:
+    if cached_res:
         return cached_res.decode('utf-8')
     else:
         resp = requests.get(url)
