@@ -12,7 +12,7 @@ import redis
 
 
 redis_inst = redis.Redis()
-"""global instance of redis
+"""global instance of redis.
 """
 
 
