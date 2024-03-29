@@ -59,25 +59,18 @@ def replay(method: Callable) -> None:
     gets the the count and the inputs and outputs for each
     method call that is passed into it
     """
-    if method is None or not hasattr(method, '__self__'):
-        return
-    redis_inst = getattr(method.__self__, '_redis', None)
-    if not isinstance(redis_inst, redis.Redis):
-        return
+    redis_inst = redis.Redis()
     key = method.__qualname__
-    count = 0
-    if redis_inst.exists(key) != 0:
-        count = int(redis_inst.get(key))
-    print("{} was called {} times:".format(key, count))
-
+    count = redis_inst.get(key)
+    print("{} was called {} times:".format(key, int(count)))
     key_in = key+":inputs"
     key_out = key+":outputs"
     inputs = redis_inst.lrange(key_in, 0, -1)
     outputs = redis_inst.lrange(key_out, 0, -1)
-
     for inp, out in zip(inputs, outputs):
         i = inp.decode('utf-8')
-        print("{}(*{}) -> {}".format(key, i, out))
+        o = out.decode('utf-8')
+        print("{}(*{}) -> {}".format(key, i, o))
 
 
 class Cache:
