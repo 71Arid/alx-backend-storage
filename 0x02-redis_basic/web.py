@@ -11,6 +11,11 @@ from typing import Callable
 import redis
 
 
+redis_inst = redis.Redis()
+"""global instance of redis
+"""
+
+
 def count_calls(method: Callable) -> Callable:
     """
     implements the count functionality recording each
@@ -19,7 +24,6 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(url):
         key = "count:{}".format(url)
-        redis_inst = redis.Redis()
         result = method(url)
         redis_inst.incr(key, amount=1)
         return result
@@ -33,9 +37,9 @@ def get_page(url: str) -> str:
     the url and then set expitation time of
     a cache value it input in redis
     """
-    redis_inst = redis.Redis()
     key = "result:{}".format(url)
     cached_res = redis_inst.get(key)
+    redis_inst.set(f"count:{url}", 0)
     if cached_res:
         return cached_res.decode('utf-8')
     else:
