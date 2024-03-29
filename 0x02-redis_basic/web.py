@@ -24,11 +24,10 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(url):
         redis_inst.incr(f"count:{url}")
-        res = redis_incr.get(f"result:{url}")
+        res = redis_inst.get(f"result:{url}")
         if res:
             return res.decode('utf-8')
         res = method(url)
-        redis_inst.set(f"count:{url}", 0)
         redis_inst.setex(f"result:{url}", 10, res)
         return res
     return wrapper
