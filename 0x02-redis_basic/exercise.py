@@ -53,6 +53,27 @@ def call_history(method: Callable) -> Callable:
         return res
     return wrapper
 
+def replay(method: Callable) -> None:
+    """
+    gets the the count and the inputs and outputs for each
+    method call that is passed into it
+    """
+    redis_inst = redis.Redis()
+    key = method.__qualname__
+    count = redis_inst.get(key)
+    print("{} was called {} times".format(key, int(count)))
+
+    key_in = key+":inputs"
+    key_out = key+":outputs"
+    inputs = redis_inst.lrange(key_in, 0, -1)
+    outputs = redis_inst.lrange(key_out, 0, -1)
+
+    for inp, out in zip(inputs, outputs):
+        i = inp.decode('utf-8')
+        o = out
+        print("{}(*{}) -> {}".format(key, i, o))
+
+
 
 class Cache:
     """
@@ -108,24 +129,3 @@ class Cache:
         coversion function for int type
         """
         return self.get(key, fn=int)
-
-
-def replay(method: Callable) -> None:
-    """
-    gets the the count and the inputs and outputs for each
-    method call that is passed into it
-    """
-    redis_inst = redis.Redis()
-    key = method.__qualname__
-    count = redis_inst.get(key)
-    print("{} was called {} times".format(key, int(count)))
-
-    key_in = key+":inputs"
-    key_out = key+":outputs"
-    inputs = redis_inst.lrange(key_in, 0, -1)
-    outputs = redis_inst.lrange(key_out, 0, -1)
-
-    for inp, out in zip(inputs, outputs):
-        i = inp.decode('utf-8')
-        o = out
-        print("{}(*{}) -> {}".format(key, i, o))
