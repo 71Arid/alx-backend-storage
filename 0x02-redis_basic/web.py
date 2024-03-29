@@ -26,7 +26,7 @@ def count_calls(method: Callable) -> Callable:
         redis_inst.incr(f"count:{url}")
         res = redis_incr.get(f"result:{url}")
         if res:
-            return result.decode('utf-8')
+            return res.decode('utf-8')
         res = method(url)
         redis_inst.set(f"count:{url}", 0)
         redis_inst.setex(f"result:{url}", 10, res)
