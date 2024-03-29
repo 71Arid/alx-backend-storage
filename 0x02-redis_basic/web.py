@@ -23,10 +23,14 @@ def count_calls(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(url):
-        key = "count:{}".format(url)
-        result = method(url)
-        redis_inst.incr(key, amount=1)
-        return result
+        redis_inst.incr(f"count:{url}")
+        res = redis_incr.get(f"result:{url}")
+        if res:
+            return result.decode('utf-8')
+        res = method(url)
+        redis_inst.set(f"count:{url}", 0)
+        redis_inst.setex(f"result:{url}", 10, res)
+        return res
     return wrapper
 
 
@@ -37,12 +41,4 @@ def get_page(url: str) -> str:
     the url and then set expitation time of
     a cache value it input in redis
     """
-    key = "result:{}".format(url)
-    cached_res = redis_inst.get(key)
-    redis_inst.set(f"count:{url}", 0)
-    if cached_res:
-        return cached_res.decode('utf-8')
-    else:
-        resp = requests.get(url)
-        redis_inst.setex(key, 10, resp.text)
-        return resp.text
+    return requests.get(url).text
