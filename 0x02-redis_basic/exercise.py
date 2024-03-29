@@ -53,6 +53,7 @@ def call_history(method: Callable) -> Callable:
         return res
     return wrapper
 
+
 def replay(method: Callable) -> None:
     """
     gets the the count and the inputs and outputs for each
@@ -72,7 +73,6 @@ def replay(method: Callable) -> None:
         i = inp.decode('utf-8')
         o = out
         print("{}(*{}) -> {}".format(key, i, o))
-
 
 
 class Cache:
