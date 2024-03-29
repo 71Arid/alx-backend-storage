@@ -20,8 +20,9 @@ def count_calls(method: Callable) -> Callable:
     def wrapper(url):
         key = "count:{}".format(url)
         redis_inst = redis.Redis()
+        result = method(url)
         redis_inst.incr(key, amount=1)
-        return method(url)
+        return result
     return wrapper
 
 
